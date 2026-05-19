@@ -196,6 +196,26 @@ uv run pytest
 
 Current test coverage includes text splitting, Markdown protection, client APIs, retry behavior, batch flows, async document concurrency, and HTML translation.
 
+## Release
+
+Publishing is handled by GitHub Actions when a version tag is pushed.
+
+Before the first release, configure PyPI Trusted Publishing for this repository:
+
+- Repository owner: `yunhai-dev`
+- Repository name: `llm-translate`
+- Workflow name: `publish.yml`
+- Environment name: `pypi`
+
+Then create and push a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow runs the test suite, builds the package with `uv build`, and publishes with `uv publish`.
+
 ## Project status
 
 This package is under active development. The current implementation focuses on robust OpenAI-compatible translation flows for text, Markdown, and HTML documents.
