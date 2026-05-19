@@ -1,5 +1,5 @@
 [project]
-name = "llm-translate"
+name = "openai-llm-translate"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -20,6 +20,9 @@ dev = [
 
 [project.scripts]
 llm-translate = "llm_translate:main"
+
+[tool.uv.build-backend]
+module-name = "llm_translate"
 
 [build-system]
 requires = ["uv_build>=0.10.12,<0.11.0"]

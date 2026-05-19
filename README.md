@@ -1,4 +1,4 @@
-# llm-translate
+# openai-llm-translate
 
 A Python translation toolkit for OpenAI-compatible LLM APIs. It supports plain text, long documents, Markdown, HTML/rich text, batch translation, retries, glossary hints, and controlled async concurrency.
 
@@ -202,6 +202,7 @@ Publishing is handled by GitHub Actions when a version tag is pushed.
 
 Before the first release, configure PyPI Trusted Publishing for this repository:
 
+- PyPI project name: `openai-llm-translate`
 - Repository owner: `yunhai-dev`
 - Repository name: `llm-translate`
 - Workflow name: `publish.yml`

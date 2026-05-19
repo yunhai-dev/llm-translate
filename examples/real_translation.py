@@ -19,7 +19,7 @@ This example sends a real request through an OpenAI-compatible API and prints th
 MARKDOWN_TEXT = """
 # Quick Start
 
-Install the package with `uv add llm-translate`.
+Install the package with `uv add openai-llm-translate`.
 
 Then set `OPENAI_API_KEY` and run the translator.
 
