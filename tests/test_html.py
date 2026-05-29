@@ -25,6 +25,22 @@ class FakeClient:
         self.chat = SimpleNamespace(completions=FakeCompletions())
 
 
+class BadBatchCompletions:
+    def create(self, **kwargs):
+        user_message = kwargs["messages"][1]["content"]
+        text = user_message.rsplit("\n\n", 1)[1]
+        if text.count("<SEGMENT") > 1:
+            content = "translated batch without matching segments"
+        else:
+            content = translate_segment_payload(text)
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content))])
+
+
+class BadBatchClient:
+    def __init__(self) -> None:
+        self.chat = SimpleNamespace(completions=BadBatchCompletions())
+
+
 class TrackingHtmlTranslator(LLMTranslator):
     def __init__(self) -> None:
         super().__init__(model="test-model", max_chunk_chars=80, max_concurrent=2)
@@ -69,6 +85,14 @@ def test_translate_html_preserves_tags_and_skipped_content() -> None:
     assert "<pre>keep me</pre>" in result.text
     assert "translated:Title" in result.text
     assert len(result.chunks) == 4
+
+
+def test_translate_html_retries_bad_multi_segment_batch_individually() -> None:
+    translator = LLMTranslator(model="test-model", client=BadBatchClient(), max_chunk_chars=200)
+
+    result = translator.translate_html("<p>one</p><p>two</p>", target_lang="zh")
+
+    assert result.text == "<p>translated:one</p><p>translated:two</p>"
 
 
 def test_translate_document_html_uses_html_path() -> None:

@@ -118,17 +118,29 @@ def _translate_node_batches_sync(
 ) -> list[str]:
     translated_values: list[str] = []
     for batch in _build_node_batches(nodes, translator.config.max_chunk_chars):
-        translated_values.extend(
-            _parse_batch_translation(
-                translator._translate_text(
-                    _format_node_batch(batch),
-                    source_lang=source_lang,
-                    target_lang=target_lang,
-                    glossary=glossary,
-                ),
-                expected_count=len(batch),
-            )
+        translated = translator._translate_text(
+            _format_node_batch(batch),
+            source_lang=source_lang,
+            target_lang=target_lang,
+            glossary=glossary,
         )
+        try:
+            translated_values.extend(_parse_batch_translation(translated, expected_count=len(batch)))
+        except ValueError:
+            if len(batch) == 1:
+                raise
+            for node in batch:
+                translated_values.extend(
+                    _parse_batch_translation(
+                        translator._translate_text(
+                            _format_node_batch([node]),
+                            source_lang=source_lang,
+                            target_lang=target_lang,
+                            glossary=glossary,
+                        ),
+                        expected_count=1,
+                    )
+                )
     return translated_values
 
 
@@ -153,7 +165,22 @@ async def _translate_node_batches_async(
                 target_lang=target_lang,
                 glossary=glossary,
             )
-        batch_results[index] = _parse_batch_translation(translated, expected_count=len(batch))
+        try:
+            batch_results[index] = _parse_batch_translation(translated, expected_count=len(batch))
+        except ValueError:
+            if len(batch) == 1:
+                raise
+            values: list[str] = []
+            for node in batch:
+                async with semaphore:
+                    translated = await translator._atranslate_text(
+                        _format_node_batch([node]),
+                        source_lang=source_lang,
+                        target_lang=target_lang,
+                        glossary=glossary,
+                    )
+                values.extend(_parse_batch_translation(translated, expected_count=1))
+            batch_results[index] = values
 
     await asyncio.gather(*(translate_one(index) for index in range(len(batches))))
 
